@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Verification Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #welcome-message {
+            text-align: center;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection">
+            <h1>Login</h1>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <button id="loginButton">Login</button>
+        </div>
+
+        <div id="verificationSection" style="display: none;">
+            <h1>Email Verification</h1>
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+            <button id="requestCodeButton">Send Verification Code</button>
+
+            <div id="verifySection" style="display: none;">
+                <h2>Verify Code</h2>
+                <div class="form-group">
+                    <label for="verificationCode">Verification Code:</label>
+                    <input type="text" id="verificationCode" placeholder="Enter the code" required>
+                </div>
+                <button id="verifyButton">Verify Code</button>
+            </div>
+        </div>
+
+        <div id="welcome-message" style="display: none;"></div>
+    </div>
+
+    <!-- Include EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
+    <script>
+        emailjs.init("Gx0H2Iu4B8e6f4cxo"); // Replace with your EmailJS User ID
+
+        let verificationCode = '';
+
+        // Function to request verification code
+        function requestVerificationCode() {
+            const email = document.getElementById('email').value;
+            if (email) {
+                verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit code
+
+                emailjs.send('service_93qnw0y', 'verif_code_xplormc', {
+                    to_name: email,
+                    verification_code: verificationCode,
+                    reply_to: "xplormc+verification@gmail.com",
+                })
+                .then(function(response) {
+                    alert('Verification code sent to your email!');
+                    document.getElementById('verifySection').style.display = 'block';
+                }, function(error) {
+                    alert('Failed to send verification code. Error: ' + JSON.stringify(error));
+                });
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        }
+
+        // Function to verify code
+        function verifyCode() {
+            const enteredCode = document.getElementById('verificationCode').value;
+            if (enteredCode === verificationCode) {
+                localStorage.setItem('user-name', document.getElementById('username').value);
+                document.getElementById('welcome-message').textContent = `Welcome back, ${document.getElementById('username').value}!`;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('verificationSection').style.display = 'none';
+                document.getElementById('welcome-message').style.display = 'block';
+            } else {
+                alert('Invalid verification code. Please try again.');
+            }
+        }
+
+        // Function to handle login
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Simulate login validation (in a real app, this would involve server-side validation)
+            if (username && password) {
+                // Display the email verification section
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('verificationSection').style.display = 'block';
+            } else {
+                alert('Please enter both username and password.');
+            }
+        }
+
+        // Attach event listeners
+        document.getElementById('loginButton').addEventListener('click', handleLogin);
+        document.getElementById('requestCodeButton').addEventListener('click', requestVerificationCode);
+        document.getElementById('verifyButton').addEventListener('click', verifyCode);
+
+        // Check if user is already logged in
+        const storedUsername = localStorage.getItem('user-name');
+        if (storedUsername) {
+            document.getElementById('welcome-message').textContent = `Welcome back, ${storedUsername}!`;
+            document.getElementById('welcome-message').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
